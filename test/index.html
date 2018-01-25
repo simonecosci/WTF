@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=.5, maximum-scale=.0, minimum-scale=.5, user-scalable=no"
+    />
+    <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2018.1.117/styles/kendo.common.min.css" />
+    <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2018.1.117/styles/kendo.blueopal.min.css" />
+    <script src="http://kendo.cdn.telerik.com/2018.1.117/js/jquery.min.js"></script>
+    <script src="http://kendo.cdn.telerik.com/2018.1.117/js/kendo.all.min.js"></script>
+    <script src="../js/WTF.js"></script>
+    <link href="../styles/style.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="team-selector">
+        <div id="lists">
+            <h2>Players</h2>
+            <select id="players-list"></select>
+        </div>
+        <div id="teams">
+            <div id="player-detail"></div>
+            <h2>Team</h2>
+            <select id="team"></select>
+            <h2>Enemies</h2>
+            <select id="enemy"></select>
+        </div>
+    </div>
+    <div id="combat">
+        <div id="stage"></div>
+        <div id="toolbar"></div>
+        <div id="panels"></div>
+        <div id="notification"></div>
+    </div>
+    <script>
+        $(function () {
+            $(WTF).on("gameready", function () {
+
+                var game = new WTF.Game({
+                    stage: $("#stage"),
+                    panels: $("#panels"),
+                    toolbar: $("#toolbar"),
+                    notification: $("#notification"),
+                    background: "../images/stages/bg2.jpg"
+                });
+                WTF.TeamSelector.init(function () {
+
+                });
+                //game.init();
+
+            });
+        });
+    </script>
+</body>
+
+</html>
