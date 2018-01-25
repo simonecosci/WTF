@@ -46,10 +46,19 @@
                     notification: $("#notification"),
                     background: "../images/stages/bg2.jpg"
                 });
-                WTF.TeamSelector.init(function () {
+                WTF.TeamSelector.loadPlayers(function () {
+                    $("#combat").show();
+
+                    this.players[0].type = "team";
+                    WTF.players.team.push(this.players[0]);
+                    this.players[0].setup();
+
+                    this.players[1].type = "enemy";
+                    WTF.players.enemy.push(this.players[1]);
+                    this.players[1].setup();
 
                 });
-                //game.init();
+                game.init();
 
             });
         });

@@ -3,6 +3,13 @@ WTF.Game.Player = WTF.Game.Object.extend({
 
     setup: function () {
         var self = this;
+
+        self.color = "black";
+        if (self.type === "enemy")
+            self.color = "red";
+        if (self.type === "team")
+            self.color = "green";
+
         self.createLabel();
         self.createHealthBar();
         self.createEnergyBar();
@@ -38,6 +45,9 @@ WTF.Game.Player = WTF.Game.Object.extend({
         self.element.children().on("dragstart", function (e) {
             e.preventDefault();
         });
+        self.timeout = setInterval(function () {
+            self.tick();
+        }, self.options.tick * 1000);
 
     },
 
@@ -74,17 +84,8 @@ WTF.Game.Player = WTF.Game.Object.extend({
             energy: self.options.energy.regen,
             health: self.options.health.regen,
         };
-        self.color = "black";
-        if (self.type === "enemy")
-            self.color = "red";
-        if (self.type === "team")
-            self.color = "green";
 
         self.options.selectable = true;
-        self.setup();
-        self.timeout = setInterval(function () {
-            self.tick();
-        }, self.options.tick * 1000);
     },
 
     select: function () {
