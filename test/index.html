@@ -18,14 +18,14 @@
     <div id="team-selector">
         <div id="lists">
             <h2>Players</h2>
-            <select id="players-list"></select>
+            <div id="players-list"></div>
         </div>
         <div id="teams">
-            <div id="player-detail"></div>
             <h2>Team</h2>
-            <select id="team"></select>
+            <div id="team"></div>
+            <hr>
             <h2>Enemies</h2>
-            <select id="enemy"></select>
+            <div id="enemy"></div>
         </div>
     </div>
     <div id="combat">
@@ -39,6 +39,7 @@
             $(WTF).on("gameready", function () {
 
                 var game = new WTF.Game({
+                    type: "1vs1",
                     stage: $("#stage"),
                     panels: $("#panels"),
                     toolbar: $("#toolbar"),
