@@ -10,8 +10,28 @@ WTF.Abilities.Abstract = kendo.Class.extend({
         this.owner = owner;
         this.options = $.extend(true, this.defaults, options);
     },
+    check: function () {
+        var self = this;
+        if (!self.usable) {
+            return false;
+        }
+        var elements = ["energy", "health"];
+        for (var i in elements) {
+            if (self.options.cost && self.options.cost[elements[i]]) {
+                if (self.options.cost[elements[i]] > self.owner[elements[i]].value) {
+                    if (WTF.selection === self.owner) {
+                        WTF.notification.warning(self.options.label + " not enough " + elements[i]);
+                    }
+                    return false;
+                }
+                self.owner[elements[i]].set("value", self.owner[elements[i]].value - self.options.cost[elements[i]]);
+            }
+            return true;
+        };
+
+    },
     use: function () {
-        if (!this.usable)
+        if (!this.check())
             return;
         if ($.isFunction(this.options.use)) {
             return this.options.use.call(this);
@@ -68,7 +88,7 @@ WTF.Abilities.Abstract = kendo.Class.extend({
 WTF.Abilities.Shot = WTF.Abilities.Abstract.extend({
     init: function (options, owner) {
         var options = $.extend(true, {
-            description: "Shot a projectile to the target enemy dealing up " + options.damage.min +" to " + options.damage.max + " damages",
+            description: "Shot a projectile to the target enemy dealing up " + options.damage.min + " to " + options.damage.max + " damages",
             width: 5,
             height: 5,
             speed: 150,
@@ -93,6 +113,12 @@ WTF.Abilities.Shot = WTF.Abilities.Abstract.extend({
             }
             return;
         }
+        if (WTF.selection.type === self.owner.target.type) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Invalid target");
+            }
+            return;
+        }
         if (self.owner.target.id === self.owner.id) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
@@ -112,16 +138,17 @@ WTF.Abilities.Shot = WTF.Abilities.Abstract.extend({
             }
             return;
         }
-
+        if (!self.check())
+            return;
         self.cooldown();
         var bullet = new WTF.Elements.Bullet({
-            top: this.owner.position().top,
-            left: this.owner.position().left,
-            speed: this.options.speed,
-            width: this.options.width,
-            height: this.options.height
+            top: self.owner.position().top,
+            left: self.owner.position().left,
+            speed: self.options.speed,
+            width: self.options.width,
+            height: self.options.height
         });
-        bullet.moveTo(this.owner.target.position(), {
+        bullet.moveTo(self.owner.target.position(), {
             complete: function () {
                 bullet.element.stop();
                 bullet.destroy();
@@ -144,7 +171,7 @@ WTF.Abilities.Shot = WTF.Abilities.Abstract.extend({
 WTF.Abilities.Heal = WTF.Abilities.Abstract.extend({
     init: function (options, owner) {
         var options = $.extend(true, {
-            description: "Heal the friendly target up " + options.heal.min +" to " + options.heal.max + " health points",
+            description: "Heal the friendly target up " + options.heal.min + " to " + options.heal.max + " health points",
         }, options);
         WTF.Abilities.Abstract.fn.init.call(this, options, owner);
     },
@@ -168,6 +195,8 @@ WTF.Abilities.Heal = WTF.Abilities.Abstract.extend({
             }
             return;
         }
+        if (!self.check())
+            return;
         self.heal(self.owner.target);
         self.cooldown();
     }

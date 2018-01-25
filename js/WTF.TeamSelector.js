@@ -123,12 +123,9 @@ WTF.TeamSelector = {
         });
     },
 
-    loadPlayers: function(callback) {
+    loadPlayers: function(players, callback) {
         var self = this;
-        new WTF.Loader([
-            "../js/WTF/Players/JohnDoe.js",
-            "../js/WTF/Players/FooBarBaz.js",
-        ]).load().then(function(){
+        new WTF.Loader(players).load().then(function(){
             callback.call(self);
         });
     }
