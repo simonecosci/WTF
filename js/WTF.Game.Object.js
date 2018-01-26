@@ -42,28 +42,35 @@ WTF.Game.Object = kendo.Class.extend({
         });
         WTF.objects.push(this);
     },
+    coords: function() {
+        return {
+            left: parseInt(this.element.css("left")),
+            top: parseInt(this.element.css("top"))
+        }
+    },
     position: function (position) {
+        var self = this;
         if (position) {
             if (position.top) {
-                this.element.css({
-                    top: position.top - parseInt(this.height / 2)
+                self.element.css({
+                    top: position.top - parseInt(self.height / 2)
                 })
             }
             if (position.left) {
-                this.element.css({
-                    left: position.left - parseInt(this.width / 2)
+                self.element.css({
+                    left: position.left - parseInt(self.width / 2)
                 })
             }
-            return this;
+            return self;
         }
         return {
-            left: parseInt(this.element.css("left")) + parseInt(this.width / 2),
-            top: parseInt(this.element.css("top")) + parseInt(this.height / 2)
+            left: parseInt(self.element.css("left")) + parseInt(self.width / 2),
+            top: parseInt(self.element.css("top")) + parseInt(self.height / 2)
         }
     },
     moveTo: function (position, options) {
         var self = this;
-        var duration = this.timeNeeded(position);
+        var duration = self.timeNeeded(position);
         var base = {
             duration: duration,
             queue: false,
@@ -77,11 +84,15 @@ WTF.Game.Object = kendo.Class.extend({
             }
         }
         var options = $.extend(true, base, options);
-        this.element.animate(position, options);
+        return self.element.animate({
+            left: position.left - parseInt(self.width / 2),
+            top: position.top - parseInt(self.height / 2)
+        }, options);
     },
     timeNeeded: function (position) {
         var distance = this.distanceTo(position);
-        return distance / this.speed * 1000;
+        var time = distance / this.speed * 1000;
+        return time;
     },
     distanceTo: function (position) {
         return WTF.distance(this.position(), position);
@@ -94,6 +105,6 @@ WTF.Game.Object = kendo.Class.extend({
         if (o >= 0) {
             WTF.objects.splice(o, 1);
         }
-        this.element.remove();
+        self.element.remove();
     }
 });

@@ -114,3 +114,21 @@ body {
 .team {
     background-color: green;
 }
+
+@keyframes explode {
+    from{
+        transform: scale(1);
+    }
+    to{
+        transform: scale(100);
+    }
+}
+
+.explosion {
+    background: radial-gradient(circle at center, yellow, red, transparent 70%);
+    display: inline-block;
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    animation: explode .3s;
+}

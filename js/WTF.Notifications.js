@@ -1,6 +1,6 @@
 WTF.Notifications.Abstract = kendo.Class.extend({
     init: function (value) {
-        this.duration = 1.5;
+        this.duration = .5;
         this.element = $("<span/>");
         this.element.css({
             fontSize: "100%",

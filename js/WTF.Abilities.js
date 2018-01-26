@@ -37,12 +37,12 @@ WTF.Abilities.Abstract = kendo.Class.extend({
             return this.options.use.call(this);
         }
     },
-    cooldown: function () {
+    cooldown: function (seconds) {
         var self = this;
         self.usable = false;
         if (WTF.selection && self.owner.id === WTF.selection.id) {
-            var cd = self.options.cooldown;
             WTF.toolbar.find("#ability-" + self.options.bind).find("span").text(self.options.label + "(" + cd + ")");
+            var cd = seconds || self.options.cooldown;
             (function () {
                 var fn = arguments.callee;
                 setTimeout(function () {
@@ -61,7 +61,7 @@ WTF.Abilities.Abstract = kendo.Class.extend({
                 WTF.toolbar.find("#ability-" + self.options.bind).data("kendoButton").enable(true);
                 WTF.toolbar.find("#ability-" + self.options.bind).find("span").text(self.options.label);
             }
-        }, self.options.cooldown * 1000);
+        }, (seconds || self.options.cooldown) * 1000);
         if (WTF.selection && self.owner.id === WTF.selection.id) {
             WTF.toolbar.find("#ability-" + self.options.bind).data("kendoButton").enable(false);
         }
@@ -154,19 +154,26 @@ WTF.Abilities.Shot = WTF.Abilities.Abstract.extend({
                 bullet.destroy();
             }
         });
-        bullet.element.on("hit", function (e, hitted) {
-            if (hitted === self.owner) {
+        bullet.element.on("hit", function (e, hit) {
+            if (hit === self.owner) {
                 return;
             }
-            if (hitted.type && self.owner.type !== hitted.type) {
-                bullet.element.stop();
-                bullet.destroy();
-                self.damage(hitted);
+            if (!hit.type) {
+                return;
             }
+            if (self.owner.type === hit.type) {
+                return;
+            }
+            if (!hit.options.hitable) {
+                return;
+            }
+
+            bullet.element.stop();
+            bullet.destroy();
+            self.damage(hit);
         });
     }
 });
-
 
 WTF.Abilities.Heal = WTF.Abilities.Abstract.extend({
     init: function (options, owner) {
@@ -199,5 +206,302 @@ WTF.Abilities.Heal = WTF.Abilities.Abstract.extend({
             return;
         self.heal(self.owner.target);
         self.cooldown();
+    }
+});
+
+WTF.Abilities.Melee = WTF.Abilities.Abstract.extend({
+    init: function (options, owner) {
+        var options = $.extend(true, {
+            description: "Hit the target with melee weapon dealing up " + options.damage.min + " to " + options.damage.max + " damages",
+            width: 1,
+            height: 1,
+            range: {
+                min: 0,
+                max: 100
+            }
+        }, options);
+        WTF.Abilities.Abstract.fn.init.call(this, options, owner);
+    },
+    use: function () {
+        var self = this;
+        if (!self.usable) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Not ready yet");
+            }
+            return;
+        }
+        if (!self.owner.target) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Select a target");
+            }
+            return;
+        }
+        if (WTF.selection.type === self.owner.target.type) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Invalid target");
+            }
+            return;
+        }
+        if (self.owner.target.id === self.owner.id) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Invalid target");
+            }
+            return;
+        }
+        var distance = self.owner.distanceTo(self.owner.target.position());
+        if (distance < self.options.range.min) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Target too close");
+            }
+            return;
+        }
+        if (distance > self.options.range.max) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Target too far");
+            }
+            return;
+        }
+        if (!self.check())
+            return;
+        self.cooldown();
+        if (!self.owner.target.options.hitable) {
+            return;
+        }
+        self.damage(self.owner.target);
+    }
+});
+
+WTF.Abilities.Bomb = WTF.Abilities.Abstract.extend({
+    init: function (options, owner) {
+        var options = $.extend(true, {
+            description: "Launch a bomb to the target enemy dealing up " + options.damage.min + " to " + options.damage.max + " damages",
+            width: 15,
+            height: 15,
+            speed: 100,
+            range: {
+                min: 0,
+                max: 300
+            }
+        }, options);
+        WTF.Abilities.Abstract.fn.init.call(this, options, owner);
+    },
+    explode: function (bomb) {
+        var self = this;
+        bomb.exploded = true;
+        var explosion = new WTF.Effects.Explosion({
+            duration: 2,
+            width: 100,
+            height: 100,
+        });
+        explosion.element.on("hits", function (e, data) {
+            console.log("hits", data);
+            explosion.element.off("hits");
+            data.hits.forEach(hit => {
+                if (hit === bomb) {
+                    return;
+                }
+                if (hit === self.owner) {
+                    return;
+                }
+                if (!hit.type) {
+                    return;
+                }
+                if (self.owner.type === hit.type) {
+                    return;
+                }
+                if (!hit.options.hitable) {
+                    return;
+                }
+                self.damage(hit);
+            });
+        });
+        explosion.show(bomb.position());
+    },
+    use: function () {
+        var self = this;
+        if (!self.usable) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Not ready yet");
+            }
+            return;
+        }
+        if (!self.owner.target) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Select a target");
+            }
+            return;
+        }
+        if (WTF.selection.type === self.owner.target.type) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Invalid target");
+            }
+            return;
+        }
+        if (self.owner.target.id === self.owner.id) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Invalid target");
+            }
+            return;
+        }
+        var distance = self.owner.distanceTo(self.owner.target.position());
+        if (distance < self.options.range.min) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Target too close");
+            }
+            return;
+        }
+        if (distance > self.options.range.max) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Target too far");
+            }
+            return;
+        }
+        if (!self.check())
+            return;
+        self.cooldown();
+        var bomb = new WTF.Elements.Bomb({
+            top: self.owner.position().top,
+            left: self.owner.position().left,
+            speed: self.options.speed,
+            width: self.options.width,
+            height: self.options.height
+        });
+        var to = self.owner.target.position();
+        bomb.moveTo(to, {
+            complete: function () {
+                if (!self.exploded) {
+                    self.explode(bomb);
+                }
+                bomb.element.stop();
+                bomb.destroy();
+            },
+            step: function () {
+                WTF.objects.forEach(element => {
+                    if (WTF.overlaps(bomb, element)) {
+                        bomb.element.trigger("hit", element);
+                    }
+                });
+            }
+        });
+        bomb.element.on("hit", function (e, hit) {
+            if (hit === bomb) {
+                return;
+            }
+            if (hit === self.owner) {
+                return;
+            }
+            if (!hit.type) {
+                return;
+            }
+            if (self.owner.type === hit.type) {
+                return;
+            }
+            if (!hit.options.hitable) {
+                return;
+            }
+            if (!bomb.exploded) {
+                self.explode(bomb);
+            }
+            bomb.element.stop();
+            bomb.destroy();
+        });
+    }
+});
+
+WTF.Abilities.Charge = WTF.Abilities.Abstract.extend({
+    init: function (options, owner) {
+        var options = $.extend(true, {
+            description: "Charge the target dealing up " + options.damage.min + " to " + options.damage.max + " damages",
+            speed: 600,
+            range: {
+                min: 100,
+                max: 1000
+            }
+        }, options);
+        WTF.Abilities.Abstract.fn.init.call(this, options, owner);
+    },
+    use: function () {
+        var self = this;
+        if (!self.usable) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Not ready yet");
+            }
+            return;
+        }
+        if (!self.owner.target) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Select a target");
+            }
+            return;
+        }
+        if (WTF.selection.type === self.owner.target.type) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Invalid target");
+            }
+            return;
+        }
+        if (self.owner.target.id === self.owner.id) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Invalid target");
+            }
+            return;
+        }
+        var distance = self.owner.distanceTo(self.owner.target.position());
+        if (distance < self.options.range.min) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Target too close");
+            }
+            return;
+        }
+        if (distance > self.options.range.max) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Target too far");
+            }
+            return;
+        }
+        if (!self.check())
+            return;
+        self.cooldown();
+        if (!self.owner.target.options.hitable) {
+            return;
+        }
+        self.owner.speed = self.options.speed;
+        var chained = {};
+        self.owner.moveTo(self.owner.target.position(), {
+            step: function () {
+                WTF.objects.forEach(element => {
+                    if (WTF.overlaps(self.owner, element)) {
+                        if (!element.type) {
+                            return;
+                        }
+                        if (element.type === self.owner.type) {
+                            return;
+                        }
+                        if (!element.options.hitable) {
+                            return;
+                        }
+                        if (chained[element.id]) {
+                            return;
+                        }
+                        chained[element.id] = element;
+                        element.speed = self.options.speed;
+                        element.moveTo(self.owner.target.position(), {
+                            complete: function () {
+                                element.speed = element.options.speed;
+                                self.damage(element);
+                            }
+                        });
+                    }
+                });
+            },
+            always: function () {
+                self.owner.element.css({
+                    backgroundImage: "url(" + self.owner.options.image.stop + ")"
+                });
+            },
+            complete: function () {
+                self.owner.speed = self.owner.options.speed;
+            }
+        });
     }
 });

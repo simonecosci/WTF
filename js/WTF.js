@@ -1,5 +1,17 @@
 (function ($, kendo) {
 
+    var dependecies = [
+        "../js/WTF.Game.js",
+        "../js/WTF.Game.Object.js",
+        "../js/WTF.Game.Player.js",
+        "../js/WTF.Abilities.js",
+        "../js/WTF.Elements.js",
+        "../js/WTF.Effects.js",
+        "../js/WTF.Notifications.js",
+        "../js/WTF.Behaviors.js",
+        "../js/WTF.TeamSelector.js",
+    ];
+
     var WTF = {
         game: null,
         stage: null,
@@ -21,17 +33,15 @@
             team: [],
             enemy: []
         },
-        find: function(id) {
-            var i = WTF.objects.findIndex(function(element){
+        find: function (id) {
+            var i = WTF.objects.findIndex(function (element) {
                 return element.id === id;
             });
             return WTF.objects[i];
         },
         distance: function (p1, p2) {
-            var a = p1.left - p2.left;
-            var b = p1.top - p2.top;
-            var d = parseInt(Math.abs(Math.sqrt(a * a + b * b)));
-            return d;
+            var distance = Math.hypot(p2.left - p1.left, p2.top - p1.top);
+            return distance;
         },
         getPositions: function (o) {
             var pos = {
@@ -53,6 +63,16 @@
         },
         randomInt: function (min, max) {
             return Math.floor(Math.random() * (max - min + 1) + min);
+        },
+        collisions: function (p) {
+            if (!p.element)
+                return [];
+            var ranged = this.objects.filter(function (e) {
+                if (!e.element)
+                    return false;
+                return WTF.overlaps(p, e);
+            });
+            return ranged;
         }
     };
 
@@ -60,7 +80,11 @@
 
     WTF.Elements = {};
 
+    WTF.Effects = {};
+
     WTF.Notifications = {};
+
+    WTF.Behaviors = {};
 
     WTF.Loader = function (scripts) {
         var self = this;
@@ -74,12 +98,13 @@
             var script = this.scripts.pop();
             $.getScript(script, function () {
                 self.load();
-            }).fail(function(){
-                if(arguments[0].readyState==0){
+            }).fail(function () {
+                if (arguments[0].readyState == 0) {
                     //script failed to load
-                }else{
+                } else {
                     //script loaded but failed to parse
                     alert(arguments[2].toString());
+                    console.log(arguments, arguments[2].stack);
                 }
             });
             return this;
@@ -92,15 +117,7 @@
     $.extend(window, {
         WTF: WTF
     });
-    new WTF.Loader([
-        "../js/WTF.Game.js",
-        "../js/WTF.Game.Object.js",
-        "../js/WTF.Game.Player.js",
-        "../js/WTF.Abilities.js",
-        "../js/WTF.Elements.js",
-        "../js/WTF.Notifications.js",
-        "../js/WTF.TeamSelector.js",
-    ]).load().then(function(){
+    new WTF.Loader(dependecies).load().then(function () {
         $(WTF).trigger("gameready");
     });
 

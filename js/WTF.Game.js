@@ -19,10 +19,11 @@ WTF.Game = function (options) {
         WTF.stage.on("click", function (e) {
             e.stopPropagation();
             if (WTF.selection) {
-                WTF.selection.moveTo({
-                    top: e.pageY - parseInt(WTF.selection.height / 2),
-                    left: e.pageX - parseInt(WTF.selection.width / 2)
-                });
+                var destination = {
+                    left: e.pageX,
+                    top: e.pageY
+                };
+                WTF.selection.moveTo(destination);
             }
         });
 
@@ -76,7 +77,7 @@ WTF.Game = function (options) {
                     field: "stats.healsDone",
                     title: "Heals"
                 }, {
-                        title: "Stats",
+                    title: "Stats",
                     template: function (dataItem) {
                         return "<div class='playerbar energybar'></div><div class='playerbar healthbar'></div>"
                     }
@@ -123,7 +124,7 @@ WTF.Game = function (options) {
                 stats: element.stats,
                 image: element.options.image.stop
             });
-        });        
+        });
 
         WTF.panels.enemy = self.options.panels.find("#panel-enemy").kendoGrid({
             dataSource: dataSourceEnemy,

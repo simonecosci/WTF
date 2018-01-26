@@ -1,6 +1,32 @@
 
 WTF.Game.Player = WTF.Game.Object.extend({
 
+    init: function (options) {
+
+        var self = this;
+
+        WTF.Game.Object.fn.init.call(self, options);
+
+        self.dead = false;
+        self.name = self.options.name;
+        self.type = self.options.type;
+        self.target = null;
+        self.stats = new kendo.data.ObservableObject({
+            damagesDone: 0,
+            damagesTaken: 0,
+            healsDone: 0,
+            healsTaken: 0
+        });
+        self.regen = {
+            energy: self.options.energy.regen,
+            health: self.options.health.regen,
+        };
+
+        self.options.selectable = true;
+        self.options.hitable = true;
+        self.options.movable = true;
+    },
+
     setup: function () {
         var self = this;
 
@@ -64,30 +90,6 @@ WTF.Game.Player = WTF.Game.Object.extend({
         WTF.Game.Object.fn.destroy.call(self);
     },
 
-    init: function (options) {
-
-        var self = this;
-
-        WTF.Game.Object.fn.init.call(self, options);
-
-        self.dead = false;
-        self.name = self.options.name;
-        self.type = self.options.type;
-        self.target = null;
-        self.stats = new kendo.data.ObservableObject({
-            damagesDone: 0,
-            damagesTaken: 0,
-            healsDone: 0,
-            healsTaken: 0
-        });
-        self.regen = {
-            energy: self.options.energy.regen,
-            health: self.options.health.regen,
-        };
-
-        self.options.selectable = true;
-    },
-
     select: function () {
         var self = this;
         if (self.dead)
@@ -147,11 +149,13 @@ WTF.Game.Player = WTF.Game.Object.extend({
         });
     },
 
-    moveTo: function (position) {
+    moveTo: function (position, options) {
         var self = this;
+        if (!self.options.movable)
+            return;
         self.element.stop(true, false);
         var duration = self.timeNeeded(position);
-        self.element.animate(position, {
+        var base = {
             duration: duration,
             queue: false,
             easing: "linear",
@@ -172,7 +176,13 @@ WTF.Game.Player = WTF.Game.Object.extend({
                     });
                 }
             }
-        });
+        };
+        var options = $.extend(true, base, options);
+        return self.element.animate({
+            left: position.left - parseInt(self.width / 2),
+            top: position.top - parseInt(self.height / 2)
+        }, options);
+        
     },
 
     setTarget: function (target) {
@@ -256,6 +266,18 @@ WTF.Game.Player = WTF.Game.Object.extend({
             var Ability = WTF.Abilities[name].extend();
             self.abilities[name] = new Ability(abilityOptions, self);
         }
+    },
+
+    closest: function(type) {
+        var distance, closest = null;
+        var type = WTF.players[type].forEach(player => {
+            var d = self.distanceTo(player.position());
+            if (distance === null || d < distance) {
+                closest = player;
+                return distance = d;
+            }
+        });
+        return closest;
     },
 
     tick: function () {

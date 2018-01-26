@@ -19,3 +19,17 @@ WTF.Elements.Bullet = WTF.Elements.Abstract.extend({
     }
     
 });
+
+WTF.Elements.Bomb = WTF.Elements.Abstract.extend({
+
+    init: function(options) {
+        this.exploded = false;
+        WTF.Elements.Abstract.fn.init.call(this, options);
+        this.element.css({
+            borderRadius: "50%",
+            backgroundColor: "black",
+            display: "inline-block"
+        });
+    }
+    
+});
