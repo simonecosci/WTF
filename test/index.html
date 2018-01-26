@@ -47,12 +47,9 @@
                     background: "../images/stages/bg2.jpg"
                 });
                 WTF.TeamSelector.loadPlayers([
-                    "../js/WTF/Players/Genji.js",
-                    "../js/WTF/Players/Roadhog.js",
-                    "../js/WTF/Players/Soldier79.js",
-                    "../js/WTF/Players/Junkrat.js",
-                    "../js/WTF/Players/Reaper.js",
-                    ], function () {
+                    "../js/WTF/Players/JohnDoe.js",
+                    "../js/WTF/Players/FooBarBaz.js",
+                ], function () {
                     $("#combat").show();
 
                     this.players[0].type = "team";
@@ -63,15 +60,10 @@
                     WTF.players.enemy.push(this.players[1]);
                     this.players[1].setup();
 
-                    this.players[2].type = "team";
-                    WTF.players.team.push(this.players[2]);
-                    this.players[2].setup();
-
-                    this.players[3].type = "team";
-                    WTF.players.team.push(this.players[3]);
-                    this.players[3].setup();
-
                     game.init();
+
+                    WTF.players.enemy[0].position({left:200,top:200});
+
                 });
 
             });
