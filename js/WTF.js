@@ -73,6 +73,12 @@
                 return WTF.overlaps(p, e);
             });
             return ranged;
+        },
+        isInRange(point, range) {
+            var ranged = this.objects.filter(function (e) {
+                return WTF.distance(point, e.position()) < range;
+            });
+            return ranged;
         }
     };
 

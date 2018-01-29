@@ -1,7 +1,8 @@
 WTF.Game = function (options) {
     var self = this;
-
+    self.started = false;
     self.options = options;
+
     WTF.game = self;
     WTF.toolbar = options.toolbar;
     WTF.stage = options.stage || $("body");
@@ -14,18 +15,20 @@ WTF.Game = function (options) {
         WTF.players[config.type].push(player);
     };
 
+    self.stageClickAndMove = function (e) {
+        e.stopPropagation();
+        if (WTF.selection) {
+            var destination = {
+                left: e.pageX,
+                top: e.pageY
+            };
+            WTF.selection.moveTo(destination);
+        }
+    };
+
     self.init = function () {
 
-        WTF.stage.on("click", function (e) {
-            e.stopPropagation();
-            if (WTF.selection) {
-                var destination = {
-                    left: e.pageX,
-                    top: e.pageY
-                };
-                WTF.selection.moveTo(destination);
-            }
-        });
+        WTF.stage.on("click", self.stageClickAndMove);
 
         self.options.panels
             .append($("<h2>Team</h2><div id='panel-team'/>"))
@@ -190,33 +193,65 @@ WTF.Game = function (options) {
             }
         }).data("kendoGrid");
 
-        var ondead = function (evt) {
-            if (WTF.selection && WTF.selection === evt.currentTarget) {
+        var ondead = function (evt, dead) {
+            if (WTF.selection && WTF.selection === dead) {
                 var target = WTF.selection.target;
                 if (target) {
-                    WTF.players.enemy.forEach(obj => {
-                        if (obj.id === target.id) {
-                            obj.element.css(WTF.markStyle.unselected);
-                        }
-                    });
+                    target.element.css(WTF.markStyle.unselected);
                 }
                 WTF.selection = null;
             }
-            if (evt.currentTarget.type === "team") {
-                WTF.notification.warning(evt.currentTarget.name + " is dead");
+            if (dead.type === "team") {
+                WTF.notification.warning(dead.name + " is dead");
             }
-            if (evt.currentTarget.type === "enemy") {
-                WTF.notification.success(evt.currentTarget.name + " is dead");
+            if (dead.type === "enemy") {
+                WTF.notification.success(dead.name + " is dead");
             }
+            ["enemy", "team"].forEach(type => {
+                WTF.players[type].forEach(element => {
+                    if (element.target === dead) {
+                        element.target = null;
+                        if (self.started && element !== WTF.selection && element.behavior) {
+                            element.behavior.stop();
+                            element.behavior.start();
+                        }
+                    }
+                });
+            });
         }
 
-        WTF.players.team.forEach(o => {
-            o.element.show();
-            $(o).on("dead", ondead);
+        for (var type in WTF.players) {
+            var last = 0;
+            WTF.players[type].forEach(o => {
+                if (type === "team") {
+                    o.element.css({
+                        top: last + 10,
+                        left: 10,
+                    });
+                }
+                if (type === "enemy") {
+                    o.element.css({
+                        top: last + 10,
+                        right: 10,
+                    });
+                }
+                o.element.show();
+                $(o).on("dead", ondead);
+                last = o.element.height();
+            });
+        }
+    }
+
+    self.start = function () {
+        if (self.started)
+            return;
+        ["enemy", "team"].forEach(type => {
+            WTF.players[type].forEach(element => {
+                if (element.behavior) {
+                    element.behavior.start();
+                }
+            });
         });
-        WTF.players.enemy.forEach(o => {
-            o.element.show();
-            $(o).on("dead", ondead);
-        });
+        self.started = true;
     }
 };

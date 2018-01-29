@@ -1,3 +1,8 @@
+WTF.AbilityTypes = {
+    Attack: 0,
+    Defense: 1,
+    Heal: 2
+};
 
 WTF.Abilities.Abstract = kendo.Class.extend({
     init: function (options, owner) {
@@ -6,6 +11,7 @@ WTF.Abilities.Abstract = kendo.Class.extend({
             label: "Abstract",
             cooldown: 0,
         };
+        this.type = null;
         this.usable = true;
         this.owner = owner;
         this.options = $.extend(true, this.defaults, options);
@@ -98,6 +104,7 @@ WTF.Abilities.Shot = WTF.Abilities.Abstract.extend({
             }
         }, options);
         WTF.Abilities.Abstract.fn.init.call(this, options, owner);
+        this.type = WTF.AbilityTypes.Attack
     },
     use: function () {
         var self = this;
@@ -113,7 +120,7 @@ WTF.Abilities.Shot = WTF.Abilities.Abstract.extend({
             }
             return;
         }
-        if (WTF.selection.type === self.owner.target.type) {
+        if (self.owner.type === self.owner.target.type) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
@@ -181,6 +188,7 @@ WTF.Abilities.Heal = WTF.Abilities.Abstract.extend({
             description: "Heal the friendly target up " + options.heal.min + " to " + options.heal.max + " health points",
         }, options);
         WTF.Abilities.Abstract.fn.init.call(this, options, owner);
+        this.type = WTF.AbilityTypes.Heal;
     },
     use: function () {
         var self = this;
@@ -221,6 +229,7 @@ WTF.Abilities.Melee = WTF.Abilities.Abstract.extend({
             }
         }, options);
         WTF.Abilities.Abstract.fn.init.call(this, options, owner);
+        this.type = WTF.AbilityTypes.Attack;
     },
     use: function () {
         var self = this;
@@ -236,7 +245,7 @@ WTF.Abilities.Melee = WTF.Abilities.Abstract.extend({
             }
             return;
         }
-        if (WTF.selection.type === self.owner.target.type) {
+        if (self.owner.type === self.owner.target.type) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
@@ -284,6 +293,7 @@ WTF.Abilities.Bomb = WTF.Abilities.Abstract.extend({
             }
         }, options);
         WTF.Abilities.Abstract.fn.init.call(this, options, owner);
+        this.type = WTF.AbilityTypes.Attack;
     },
     explode: function (bomb) {
         var self = this;
@@ -294,7 +304,6 @@ WTF.Abilities.Bomb = WTF.Abilities.Abstract.extend({
             height: 100,
         });
         explosion.element.on("hits", function (e, data) {
-            console.log("hits", data);
             explosion.element.off("hits");
             data.hits.forEach(hit => {
                 if (hit === bomb) {
@@ -331,7 +340,7 @@ WTF.Abilities.Bomb = WTF.Abilities.Abstract.extend({
             }
             return;
         }
-        if (WTF.selection.type === self.owner.target.type) {
+        if (self.owner.type === self.owner.target.type) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
@@ -419,6 +428,7 @@ WTF.Abilities.Charge = WTF.Abilities.Abstract.extend({
             }
         }, options);
         WTF.Abilities.Abstract.fn.init.call(this, options, owner);
+        this.type = WTF.AbilityTypes.Attack;
     },
     use: function () {
         var self = this;
@@ -434,7 +444,7 @@ WTF.Abilities.Charge = WTF.Abilities.Abstract.extend({
             }
             return;
         }
-        if (WTF.selection.type === self.owner.target.type) {
+        if (self.owner.type === self.owner.target.type) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
@@ -502,6 +512,56 @@ WTF.Abilities.Charge = WTF.Abilities.Abstract.extend({
             complete: function () {
                 self.owner.speed = self.owner.options.speed;
             }
+        });
+    }
+});
+
+WTF.Abilities.Shield = WTF.Abilities.Abstract.extend({
+    init: function (options, owner) {
+        var options = $.extend(true, {
+            description: "Shield the selected friendly target for " + options.duration + " seconds",
+        }, options);
+        WTF.Abilities.Abstract.fn.init.call(this, options, owner);
+        this.type = WTF.AbilityTypes.Defense;
+    },
+    use: function () {
+        var self = this;
+        if (!self.usable) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Not ready yet");
+            }
+            return;
+        }
+        if (!self.owner.target) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Select a target");
+            }
+            return;
+        }
+        if (self.owner.type !== self.owner.target.type) {
+            if (WTF.selection === self.owner) {
+                WTF.notification.warning(self.options.label + " Invalid target");
+            }
+            return;
+        }
+        if (!self.check())
+            return;
+        self.cooldown();
+        if (!self.owner.target.options.hitable) {
+            return;
+        }
+        self.owner.target.element.css({
+            background: "rgba(0,0,255,.4)",
+            boxShadow: "0px 0px 3px #00f"
+        });
+        self.owner.target.hittable = false;
+        var background = self.owner.target.element.css("background");
+        setTimeout(function(){
+            self.owner.target.element.css({
+                background: background,
+                boxShadow: "none"
+            });
+            self.owner.target.hittable = true;
         });
     }
 });

@@ -1,6 +1,5 @@
 WTF.TeamSelector.addPlayer({
     name: "FooBarBaz",
-    right: 10,
     speed: 100,
     width: 100,
     height: 100,
@@ -37,5 +36,6 @@ WTF.TeamSelector.addPlayer({
                 max: 200
             }
         }
-    }
+    },
+    behavior: "Tank"
 });

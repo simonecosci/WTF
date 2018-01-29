@@ -74,7 +74,7 @@ WTF.TeamSelector.addPlayer({
         "Charge": {
             label: "Charge",
             bind: "5",
-            cooldown: 4,
+            cooldown: 14,
             damage: {
                 min: 200,
                 max: 1000
@@ -83,5 +83,15 @@ WTF.TeamSelector.addPlayer({
                 energy: 20
             }
         },
-    }
+        "Shield": {
+            label: "Shield",
+            bind: "6",
+            cooldown: 20,
+            duration: 5,
+            cost: {
+                energy: 10
+            }
+        },
+    },
+    behavior: "Tank"
 });

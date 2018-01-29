@@ -10,6 +10,8 @@ WTF.Game.Player = WTF.Game.Object.extend({
         self.dead = false;
         self.name = self.options.name;
         self.type = self.options.type;
+        self.behavior = null;
+        self.abilities = {};
         self.target = null;
         self.stats = new kendo.data.ObservableObject({
             damagesDone: 0,
@@ -40,6 +42,7 @@ WTF.Game.Player = WTF.Game.Object.extend({
         self.createHealthBar();
         self.createEnergyBar();
         self.createAbilities();
+        self.createBehavior();
 
         self.element.addClass("player");
         self.element.css({
@@ -94,6 +97,12 @@ WTF.Game.Player = WTF.Game.Object.extend({
         var self = this;
         if (self.dead)
             return;
+        if (self.behavior) {
+            self.behavior.stop();
+            if (WTF.selection && WTF.selection !== self && WTF.selection.behavior) {
+                WTF.selection.behavior.start();
+            }
+        }
         WTF.selection = self;
         WTF.selection.element.css(WTF.markStyle.selection);
         if (WTF.selection.target) {
@@ -142,7 +151,7 @@ WTF.Game.Player = WTF.Game.Object.extend({
                     var ability = button.data("ability");
                     ability.use();
                 }
-                } catch (error) {
+            } catch (error) {
             }
             WTF.selection.setTarget(target);
             self.select();
@@ -182,7 +191,7 @@ WTF.Game.Player = WTF.Game.Object.extend({
             left: position.left - parseInt(self.width / 2),
             top: position.top - parseInt(self.height / 2)
         }, options);
-        
+
     },
 
     setTarget: function (target) {
@@ -226,7 +235,7 @@ WTF.Game.Player = WTF.Game.Object.extend({
         self.health.bind("change", function (e) {
             if (this.value <= 0) {
                 this.value = 0;
-                $(self).trigger("dead");
+                $(self).trigger("dead", self);
                 self.destroy();
             }
             self.healthbar.value(this.value);
@@ -257,20 +266,35 @@ WTF.Game.Player = WTF.Game.Object.extend({
 
     createAbilities: function () {
         var self = this;
-        self.abilities = {};
         for (var name in self.options.abilities) {
             if (!WTF.Abilities[name]) {
                 continue;
             }
-            abilityOptions = self.options.abilities[name];
+            var options = self.options.abilities[name];
             var Ability = WTF.Abilities[name].extend();
-            self.abilities[name] = new Ability(abilityOptions, self);
+            self.abilities[name] = new Ability(options, self);
         }
     },
 
-    closest: function(type) {
-        var distance, closest = null;
+    createBehavior: function () {
+        var self = this;
+        if (self.options.behavior) {
+            var name = self.options.behavior;
+            if (!WTF.Behaviors[name]) {
+                return;
+            }
+            var options = self.options.behavior;
+            var Behavior = WTF.Behaviors[name].extend();
+            self.behavior = new Behavior(options, self);
+        }
+    },
+
+    closest: function (type) {
+        var self = this;
+        var distance = closest = null;
         var type = WTF.players[type].forEach(player => {
+            if (self === player)
+                return;
             var d = self.distanceTo(player.position());
             if (distance === null || d < distance) {
                 closest = player;
