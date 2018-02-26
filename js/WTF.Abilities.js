@@ -551,17 +551,14 @@ WTF.Abilities.Shield = WTF.Abilities.Abstract.extend({
             return;
         }
         self.owner.target.element.css({
-            background: "rgba(0,0,255,.4)",
-            boxShadow: "0px 0px 3px #00f"
+            boxShadow: "0px 0px 10px #00f"
         });
         self.owner.target.hittable = false;
-        var background = self.owner.target.element.css("background");
         setTimeout(function(){
             self.owner.target.element.css({
-                background: background,
                 boxShadow: "none"
             });
             self.owner.target.hittable = true;
-        });
+        }, self.options.duration * 1000);
     }
 });

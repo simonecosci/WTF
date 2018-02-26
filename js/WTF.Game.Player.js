@@ -84,6 +84,7 @@ WTF.Game.Player = WTF.Game.Object.extend({
         var self = this;
         self.dead = true;
         clearInterval(self.timeout);
+        self.behavior.stop();
         var o = WTF.players[self.type].findIndex(function (element) {
             return element.id === self.id;
         });
@@ -114,7 +115,7 @@ WTF.Game.Player = WTF.Game.Object.extend({
                 var button = $("<button/>");
                 button.append('<span/>');
                 button.find("span").text(ability.options.label);
-                button.find("span").attr("title", "KEY " + ability.options.bind + ": " + ability.options.description + "");
+                button.attr("title", "KEY " + ability.options.bind + ": " + ability.options.description + "");
                 button.attr("id", "ability-" + ability.options.bind);
                 button.css({
                     width: Math.floor(100 / Object.keys(self.abilities).length) + "%"
@@ -129,11 +130,6 @@ WTF.Game.Player = WTF.Game.Object.extend({
                         }
                         ability.use();
                     }
-                });
-                button.kendoTooltip({
-                    filter: "span",
-                    width: 120,
-                    position: "top"
                 });
                 button.data("ability", ability);
             })(self.abilities[name]);
