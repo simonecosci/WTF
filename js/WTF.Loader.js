@@ -11,17 +11,15 @@ WTF.Loader = function (scripts) {
         $.getScript(script, function () {
             self.load();
         }).fail(function () {
-            if (arguments[0].readyState == 0) {
-                //script failed to load
+            if (arguments[0].readyState === 0) {
             } else {
-                //script loaded but failed to parse
                 alert(arguments[2].toString());
                 console.log(arguments, arguments[2].stack);
             }
         });
         return this;
-    }
+    };
     this.then = function (callback) {
         this.callback = callback;
-    }
+    };
 };

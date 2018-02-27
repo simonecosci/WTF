@@ -4,8 +4,8 @@ WTF.TeamSelector.addPlayer({
     width: 100,
     height: 100,
     image: {
-        stop: "../images/players/boss1.gif",
-        move: "../images/players/boss1.gif",
+        stop: "/images/players/boss1.gif",
+        move: "/images/players/boss1.gif",
     },
     health: {
         regen: 2,
@@ -15,7 +15,7 @@ WTF.TeamSelector.addPlayer({
         regen: 1,
         max: 200
     },
-    tick: 1,
+    tick: .1,
     abilities: {
         "Shot": {
             label: "Shot",
@@ -25,6 +25,9 @@ WTF.TeamSelector.addPlayer({
             damage: {
                 min: 10,
                 max: 100
+            },
+            cost: {
+                energy: 2
             }
         },
         "Heal": {
@@ -34,6 +37,9 @@ WTF.TeamSelector.addPlayer({
             heal: {
                 min: 20,
                 max: 200
+            },
+            cost: {
+                energy: 5
             }
         }
     },

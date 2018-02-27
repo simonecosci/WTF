@@ -4,8 +4,8 @@ WTF.TeamSelector.addPlayer({
     width: 100,
     height: 100,
     image: {
-        stop: "../images/players/stop.jpg",
-        move: "../images/players/run.gif",
+        stop: "/images/players/stop.jpg",
+        move: "/images/players/run.gif",
     },
     health: {
         regen: 2,

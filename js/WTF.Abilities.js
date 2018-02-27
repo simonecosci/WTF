@@ -38,7 +38,7 @@ WTF.Abilities.Abstract = kendo.Class.extend({
     },
     use: function () {
         if (!this.check())
-            return;
+            return false;
         if ($.isFunction(this.options.use)) {
             return this.options.use.call(this);
         }
@@ -112,32 +112,26 @@ WTF.Abilities.Shot = WTF.Abilities.Abstract.extend({
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Not ready yet");
             }
-            return;
+            return false;
         }
         if (!self.owner.target) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Select a target");
             }
-            return;
+            return false;
         }
         if (self.owner.type === self.owner.target.type) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
-            return;
-        }
-        if (self.owner.target.id === self.owner.id) {
-            if (WTF.selection === self.owner) {
-                WTF.notification.warning(self.options.label + " Invalid target");
-            }
-            return;
+            return false;
         }
         var distance = self.owner.distanceTo(self.owner.target.position());
         if (distance < self.options.range.min) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Target too close");
             }
-            return;
+            return false;
         }
         if (distance > self.options.range.max) {
             if (WTF.selection === self.owner) {
@@ -146,7 +140,7 @@ WTF.Abilities.Shot = WTF.Abilities.Abstract.extend({
             return;
         }
         if (!self.check())
-            return;
+            return false;
         self.cooldown();
         var bullet = new WTF.Elements.Bullet({
             top: self.owner.position().top,
@@ -179,6 +173,7 @@ WTF.Abilities.Shot = WTF.Abilities.Abstract.extend({
             bullet.destroy();
             self.damage(hit);
         });
+        return true;
     }
 });
 
@@ -196,24 +191,25 @@ WTF.Abilities.Heal = WTF.Abilities.Abstract.extend({
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Not ready yet");
             }
-            return;
+            return false;
         }
         if (!self.owner.target) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Select a target");
             }
-            return;
+            return false;
         }
         if (self.owner.target.type !== self.owner.type) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
-            return;
+            return false;
         }
         if (!self.check())
-            return;
+            return false;
         self.heal(self.owner.target);
         self.cooldown();
+        return true;
     }
 });
 
@@ -237,46 +233,47 @@ WTF.Abilities.Melee = WTF.Abilities.Abstract.extend({
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Not ready yet");
             }
-            return;
+            return false;
         }
         if (!self.owner.target) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Select a target");
             }
-            return;
+            return false;
         }
         if (self.owner.type === self.owner.target.type) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
-            return;
+            return false;
         }
         if (self.owner.target.id === self.owner.id) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
-            return;
+            return false;
         }
         var distance = self.owner.distanceTo(self.owner.target.position());
         if (distance < self.options.range.min) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Target too close");
             }
-            return;
+            return false;
         }
         if (distance > self.options.range.max) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Target too far");
             }
-            return;
+            return false;
         }
         if (!self.check())
-            return;
+            return false;
         self.cooldown();
         if (!self.owner.target.options.hitable) {
-            return;
+            return false;
         }
         self.damage(self.owner.target);
+        return true;
     }
 });
 
@@ -332,41 +329,41 @@ WTF.Abilities.Bomb = WTF.Abilities.Abstract.extend({
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Not ready yet");
             }
-            return;
+            return false;
         }
         if (!self.owner.target) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Select a target");
             }
-            return;
+            return false;
         }
         if (self.owner.type === self.owner.target.type) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
-            return;
+            return false;
         }
         if (self.owner.target.id === self.owner.id) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
-            return;
+            return false;
         }
         var distance = self.owner.distanceTo(self.owner.target.position());
         if (distance < self.options.range.min) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Target too close");
             }
-            return;
+            return false;
         }
         if (distance > self.options.range.max) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Target too far");
             }
-            return;
+            return false;
         }
         if (!self.check())
-            return;
+            return false;
         self.cooldown();
         var bomb = new WTF.Elements.Bomb({
             top: self.owner.position().top,
@@ -394,25 +391,26 @@ WTF.Abilities.Bomb = WTF.Abilities.Abstract.extend({
         });
         bomb.element.on("hit", function (e, hit) {
             if (hit === bomb) {
-                return;
+                return false;
             }
             if (hit === self.owner) {
-                return;
+                return false;
             }
             if (!hit.type) {
-                return;
+                return false;
             }
             if (self.owner.type === hit.type) {
-                return;
+                return false;
             }
             if (!hit.options.hitable) {
-                return;
+                return false;
             }
             if (!bomb.exploded) {
                 self.explode(bomb);
             }
             bomb.element.stop();
             bomb.destroy();
+            return true;
         });
     }
 });
@@ -436,44 +434,44 @@ WTF.Abilities.Charge = WTF.Abilities.Abstract.extend({
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Not ready yet");
             }
-            return;
+            return false;
         }
         if (!self.owner.target) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Select a target");
             }
-            return;
+            return false;
         }
         if (self.owner.type === self.owner.target.type) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
-            return;
+            return false;
         }
         if (self.owner.target.id === self.owner.id) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
-            return;
+            return false;
         }
         var distance = self.owner.distanceTo(self.owner.target.position());
         if (distance < self.options.range.min) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Target too close");
             }
-            return;
+            return false;
         }
         if (distance > self.options.range.max) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Target too far");
             }
-            return;
+            return false;
         }
         if (!self.check())
-            return;
+            return false;
         self.cooldown();
         if (!self.owner.target.options.hitable) {
-            return;
+            return false;
         }
         self.owner.speed = self.options.speed;
         var chained = {};
@@ -513,6 +511,7 @@ WTF.Abilities.Charge = WTF.Abilities.Abstract.extend({
                 self.owner.speed = self.owner.options.speed;
             }
         });
+        return true;
     }
 });
 
@@ -530,25 +529,25 @@ WTF.Abilities.Shield = WTF.Abilities.Abstract.extend({
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Not ready yet");
             }
-            return;
+            return false;
         }
         if (!self.owner.target) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Select a target");
             }
-            return;
+            return false;
         }
         if (self.owner.type !== self.owner.target.type) {
             if (WTF.selection === self.owner) {
                 WTF.notification.warning(self.options.label + " Invalid target");
             }
-            return;
+            return false;
         }
         if (!self.check())
             return;
         self.cooldown();
         if (!self.owner.target.options.hitable) {
-            return;
+            return false;
         }
         self.owner.target.element.css({
             boxShadow: "0px 0px 10px #00f"
@@ -560,5 +559,6 @@ WTF.Abilities.Shield = WTF.Abilities.Abstract.extend({
             });
             self.owner.target.hittable = true;
         }, self.options.duration * 1000);
+        return true;
     }
 });

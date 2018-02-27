@@ -1,7 +1,7 @@
 WTF.Behaviors.Abstract = kendo.Class.extend({
     init: function (options, owner) {
         this.defaults = {
-            timeout: 5,
+            timeout: 1,
             description: "Description of the behavior",
             label: "Abstract",
         };
@@ -32,29 +32,37 @@ WTF.Behaviors.Abstract = kendo.Class.extend({
     use: function (ability) {
         var self = this;
         if (!ability.usable) {
-            return;
+            return false;
         }
         if (ability.options.range) {
-            var distance = self.owner.distanceTo(closest);
-            if (ability.options.range.min < distance) {
-                if (closest.position().left < self.owner.poisition().left) {
-                    self.owner.moveTo({
+            var type = self.owner.type === "enemy" ? "team" : "enemy";
+            var closest = self.owner.closest(type);
+            var distance = self.owner.distanceTo(closest.position());
+            if (ability.options.range.min > distance) {
+                if (closest.position().left < self.owner.position().left) {
+                    var left = self.owner.position().left + (ability.options.range.min - distance);
+                    if (left > WTF.stage.width())
+                        left = WTF.stage.width();
+                    return self.owner.moveTo({
                         top: closest.position().top,
-                        left: self.owner.poisition().left + (ability.options.range.min - distance)
+                        left: left
                     });
-                } else if (closest.position().left > self.owner.poisition().left) {
-                    self.owner.moveTo({
+                } else if (closest.position().left > self.owner.position().left) {
+                    var left = self.owner.position().left - (ability.options.range.min + distance);
+                    if (left < 0)
+                        left = 0;
+                    return self.owner.moveTo({
                         top: closest.position().top,
-                        left: self.poisition().left - (ability.options.range.min + distance)
+                        left: left
                     });
                 }
             } else if (ability.options.range.max > distance) {
-                self.owner.moveTo(closest);
+                return self.owner.moveTo(closest.position());
             } else {
-                ability.use();
+                return ability.use();
             }
         } else {
-            ability.use();
+            return ability.use();
         }
     },
 });
@@ -86,11 +94,13 @@ WTF.Behaviors.Tank = WTF.Behaviors.Abstract.extend({
         self.owner.target = closest;
         for (var a in self.owner.abilities) {
             var ability = self.owner.abilities[a];
-            self.priority.forEach(priority => {
+            for (var x = 0; x < self.priority.length; x++) {
+                var priority = self.priority[x];
                 if (ability.type === priority) {
-                    self.use(ability);
+                    if (self.use(ability))
+                        return;
                 }
-            });
+            };
         };
     }
 });

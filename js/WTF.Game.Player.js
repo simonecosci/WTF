@@ -287,14 +287,15 @@ WTF.Game.Player = WTF.Game.Object.extend({
 
     closest: function (type) {
         var self = this;
-        var distance = closest = null;
-        var type = WTF.players[type].forEach(player => {
+        var distance = null;
+        var closest = null;
+        WTF.players[type].forEach(player => {
             if (self === player)
                 return;
             var d = self.distanceTo(player.position());
             if (distance === null || d < distance) {
                 closest = player;
-                return distance = d;
+                distance = d;
             }
         });
         return closest;

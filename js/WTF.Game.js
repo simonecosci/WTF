@@ -13,6 +13,7 @@ WTF.Game = function (options) {
     self.addPlayer = function (config) {
         var player = new WTF.Game.Player(config);
         WTF.players[config.type].push(player);
+        return player;
     };
 
     self.stageClickAndMove = function (e) {
@@ -240,7 +241,7 @@ WTF.Game = function (options) {
                 last = o.element.height();
             });
         }
-    }
+    };
 
     self.start = function () {
         if (self.started)
@@ -253,5 +254,5 @@ WTF.Game = function (options) {
             });
         });
         self.started = true;
-    }
+    };
 };
