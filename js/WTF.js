@@ -1,15 +1,15 @@
 (function ($, kendo) {
 
     var dependecies = [
-        "../js/WTF.Game.js",
-        "../js/WTF.Game.Object.js",
-        "../js/WTF.Game.Player.js",
-        "../js/WTF.Abilities.js",
-        "../js/WTF.Elements.js",
-        "../js/WTF.Effects.js",
-        "../js/WTF.Notifications.js",
-        "../js/WTF.Behaviors.js",
-        "../js/WTF.TeamSelector.js",
+        "WTF.Game.js",
+        "WTF.Game.Object.js",
+        "WTF.Game.Player.js",
+        "WTF.Abilities.js",
+        "WTF.Elements.js",
+        "WTF.Effects.js",
+        "WTF.Notifications.js",
+        "WTF.Behaviors.js",
+        "WTF.TeamSelector.js",
     ];
 
     var WTF = {
@@ -96,7 +96,7 @@
         WTF: WTF
     });
     
-    $.getScript("../js/WTF.Loader.js", function () {
+    $.getScript("WTF.Loader.js", function () {
         new WTF.Loader(dependecies).load().then(function () {
             $(WTF).trigger("gameready");
         });
