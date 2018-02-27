@@ -92,6 +92,9 @@ WTF.Game.Player = WTF.Game.Object.extend({
             WTF.players[self.type].splice(o, 1);
         }
         WTF.Game.Object.fn.destroy.call(self);
+        if (WTF.players[self.type].length === 0) {
+            $(WTF.game).trigger("endgame", { result: self.type == "team" ? "won" : "lost" });
+        }
     },
 
     select: function () {

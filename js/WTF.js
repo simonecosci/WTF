@@ -13,6 +13,7 @@
     ];
 
     var WTF = {
+        debug: false,
         game: null,
         stage: null,
         panels: {},

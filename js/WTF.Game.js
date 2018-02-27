@@ -254,5 +254,9 @@ WTF.Game = function (options) {
             });
         });
         self.started = true;
+        $(self).on("endgame", function(result) {
+            console.log("endgame", result);
+            $(self).off("endgame");
+        })
     };
 };

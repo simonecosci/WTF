@@ -10,15 +10,11 @@ WTF.Behaviors.Abstract = kendo.Class.extend({
         this.owner = owner;
         this.options = $.extend(true, this.defaults, options);
     },
-    check: function() {
-        if (self.owner === WTF.selection) {
-            this.stop();
-            return false;
-        }
+    check: function () {
         return true;
     },
     behave: function () {
-        
+
     },
     start: function () {
         var self = this;
@@ -30,6 +26,7 @@ WTF.Behaviors.Abstract = kendo.Class.extend({
         clearInterval(this.timeout);
     },
     use: function (ability) {
+        console.log()
         var self = this;
         if (!ability.usable) {
             return false;
@@ -56,7 +53,7 @@ WTF.Behaviors.Abstract = kendo.Class.extend({
                         left: left
                     });
                 }
-            } else if (ability.options.range.max > distance) {
+            } else if (ability.options.range.max < distance) {
                 return self.owner.moveTo(closest.position());
             } else {
                 return ability.use();
@@ -86,21 +83,35 @@ WTF.Behaviors.Tank = WTF.Behaviors.Abstract.extend({
         if (!this.check())
             return;
         var self = this;
-        var type = self.owner.type === "enemy" ? "team" : "enemy";
-        var closest = self.owner.closest(type);
-        if (!closest) {
-            return;
-        }
-        self.owner.target = closest;
         for (var a in self.owner.abilities) {
             var ability = self.owner.abilities[a];
             for (var x = 0; x < self.priority.length; x++) {
                 var priority = self.priority[x];
                 if (ability.type === priority) {
+                    if (ability.type === WTF.AbilityTypes.Defense) {
+                        self.owner.target = self.owner;
+                    } else {
+                        if (ability.type === WTF.AbilityTypes.Heal) {
+                            var type = self.owner.type;
+                            var closest = self.owner.closest(type);
+                            self.owner.target = closest;
+                            if (WTF.players[type].length === 1) {
+                                self.owner.target = self.owner;
+                            }
+                        } 
+                        if (ability.type === WTF.AbilityTypes.Attack) {
+                            var type = self.owner.type === "enemy" ? "team" : "enemy";
+                            var closest = self.owner.closest(type);
+                            if (!closest) {
+                                return;
+                            }
+                            self.owner.target = closest;
+                        }
+                    }
                     if (self.use(ability))
                         return;
                 }
-            };
-        };
+            }
+        }
     }
 });
